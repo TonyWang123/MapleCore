@@ -30,7 +30,7 @@ public class TraceTree {
 	    Node node = trace.firstNode;
 	    List<Node> allTNodes = new LinkedList<Node>();
 	    while(node != null){
-	    	if(node.equals(TNode.class)){
+	    	if(node instanceof TNode){
 	    		allTNodes.add(node);
 	    	}
 	    	node.count--;
@@ -39,7 +39,7 @@ public class TraceTree {
 	    		if(node.pkt2fatherinTrace.get(pkt) != null){
 	    			node.pkt2fatherinTrace.get(pkt).delete(node);
 	    		}
-	    		if(node.equals(TNode.class)){
+	    		if(node instanceof TNode){
 	    			TNode tNode = (TNode) node;
 	    			if(tNode.rule != null){
 	    				deleteRule(tNode.priority, tNode.rule);
@@ -68,6 +68,9 @@ public class TraceTree {
 		if(root == null){
 			root = trace.firstNode;
 		}else{
+			if(trace.firstNode instanceof TNode){
+				System.out.println("get tnode");
+			}
 			root.augment(trace.firstNode, pkt);
 		}
 		pkt2trace.put(pkt, trace);
@@ -84,15 +87,29 @@ public class TraceTree {
 	//setup order graph
 	public void initializeOrderGraphOfTrace(Trace trace, MaplePacket pkt){
 		Node node = trace.firstNode;
-		List<Node> allTNodes = new LinkedList<Node>();
+		List<Node> allTNodesWithFalseBranch = new LinkedList<Node>();
 		while(node.pkt2nextNodeinTrace.get(pkt) != null){
 			Node nextNode = node.pkt2nextNodeinTrace.get(pkt);
-			if(node.equals(TNode.class)){
-				allTNodes.add(node);
+			if(node instanceof TNode){
+				//allTNodes.add(node);//all tNodes
 				TNode tNode = (TNode)node;
 				if(tNode.getChild(false) != null){
-					//this is false branch
-					
+					//this is false branch, generates a rule
+					//only up link
+					//weight = 1
+					for(Node tNodeWithFalseBranch: allTNodesWithFalseBranch){
+						tNodeWithFalseBranch.fatherNodesinOrderGraph.add(node);
+						if(!this.edgeWithOneWeightInOrderGraph.containsKey(node)){
+							List<Node> nodes = new ArrayList<Node>();
+							nodes.add(tNodeWithFalseBranch);
+							this.edgeWithOneWeightInOrderGraph.put(node, nodes);
+						}else{
+							this.edgeWithOneWeightInOrderGraph.get(node).add(tNodeWithFalseBranch);
+						}
+						//this.edgeWithOneWeightInOrderGraph.put(node, tNode);
+					}
+					//add
+					allTNodesWithFalseBranch.add(tNode);
 				}else{
 					//this is true branch
 					nextNode.fatherNodesinOrderGraph.add(node);
@@ -106,13 +123,13 @@ public class TraceTree {
 					}
 					//this.edgeWithOneWeightInOrderGraph.put(node, nextNode);
 				}
-			}else if(node.equals(VNode.class)){
+			}else if(node instanceof VNode){
 				nextNode.fatherNodesinOrderGraph.add(node);
 			}
 			node = node.pkt2nextNodeinTrace.get(pkt);
 		}
 		//handle LNode
-		for(Node tNode: allTNodes){
+		for(Node tNode: allTNodesWithFalseBranch){
 			tNode.fatherNodesinOrderGraph.add(node);
 			if(!this.edgeWithOneWeightInOrderGraph.containsKey(node)){
 				List<Node> nodes = new ArrayList<Node>();
@@ -127,11 +144,14 @@ public class TraceTree {
 	
 	public void traverseTTtoUpdatePriority(Node currentNodeInTrace, MaplePacket pkt, Node root){
 		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pkt);
-		if(root.equals(TNode.class)){
+		
+		if(root instanceof TNode){
 			TNode tNodeRoot = (TNode)root;
-			if(tNodeRoot.getChild(false).equals(nextNodeInTrace)){
-				//should traverse, in false branch
-				traverseTTtoUpdatePriority(nextNodeInTrace, pkt, tNodeRoot.getChild(false));
+			if(tNodeRoot.getChild(false) != null){
+				if(tNodeRoot.getChild(false).equals(nextNodeInTrace)){
+					//should traverse, in false branch
+					traverseTTtoUpdatePriority(nextNodeInTrace, pkt, tNodeRoot.getChild(false));
+				}
 			}
 		}
 		if(updatePriority(root) == true){
@@ -139,19 +159,21 @@ public class TraceTree {
 			root.ruleChanged = true;//TODO: also need to add at install rules and delete rules
 		}
 		//start to traverse tt-left
-		if(root.equals(TNode.class)){
+		if(root instanceof TNode){
 			//should traverse true branch
 			TNode tNodeRoot = (TNode)root;
 			Node childNode = tNodeRoot.getChild(true);
-			traverseTTtoUpdatePriority(nextNodeInTrace, pkt, childNode);
-		}else if(root.equals(VNode.class)){
+			if(childNode != null){
+				traverseTTtoUpdatePriority(nextNodeInTrace, pkt, childNode);
+			}
+		}else if(root instanceof VNode){
 			VNode vNodeRoot = (VNode)root;
 			for(Map.Entry<String, Node> entry: vNodeRoot.subtree.entrySet()){
 				String value = entry.getKey();
 				Node childNode = entry.getValue();
 				traverseTTtoUpdatePriority(nextNodeInTrace, pkt, childNode);
 			}
-		}else if(root.equals(LNode.class)){
+		}else if(root instanceof LNode){
 			return;
 		}
 	}
@@ -162,8 +184,10 @@ public class TraceTree {
 		int max = Integer.MIN_VALUE;
 		for(Node srcNode: node.fatherNodesinOrderGraph){
 			int weight = 0;
-			if(this.edgeWithOneWeightInOrderGraph.get(srcNode).contains(node)){
-				weight = 1;
+			if(this.edgeWithOneWeightInOrderGraph.containsKey(srcNode)){
+				if(this.edgeWithOneWeightInOrderGraph.get(srcNode).contains(node)){
+					weight = 1;
+				}
 			}
 			int temp = weight + srcNode.priority;
 			if(max < temp)max = temp;
@@ -172,6 +196,27 @@ public class TraceTree {
 		node.priority = max;
 		if(max != oldPriority)isChanged = true;
 		return isChanged;
+	}
+	
+	public void show(Node root){
+		System.out.println(root.toString());
+		if(root instanceof TNode){
+			TNode tNode = (TNode)root;
+			
+			if(tNode.getChild(false) != null){
+				show(tNode.getChild(false));
+			}
+			if(tNode.getChild(true) != null){
+				show(tNode.getChild(true));
+			}
+		}else if(root instanceof VNode){
+			VNode vNode = (VNode)root;
+			for(Map.Entry<String, Node> entry: vNode.subtree.entrySet()){
+				show(entry.getValue());
+			}
+		}else{
+			return;
+		}
 	}
 	
 	public static void main(String[] args){
@@ -185,7 +230,7 @@ public class TraceTree {
 		LNode lNode1 = new LNode();
 		lNode1.action = "port:1";
 		
-		tNode1.subtree[1] = vNode1;
+		tNode1.subtree[0] = vNode1;//false
 		vNode1.subtree.put("mac:1", lNode1);
 		tNode1.pkt2nextNodeinTrace.put(pkt1, vNode1);
 		vNode1.pkt2fatherinTrace.put(pkt1, tNode1);
@@ -207,7 +252,7 @@ public class TraceTree {
 		LNode lNode2 = new LNode();
 		lNode2.action = "port:2";
 		
-		tNode2.subtree[1] = vNode2;
+		tNode2.subtree[1] = vNode2;//true
 		vNode2.subtree.put("mac:2", lNode2);
 		tNode2.pkt2nextNodeinTrace.put(pkt2, vNode2);
 		vNode2.pkt2fatherinTrace.put(pkt2, tNode2);
@@ -222,5 +267,7 @@ public class TraceTree {
 		TraceTree tt = new TraceTree();
 		tt.updateTT(pkt1, trace1);
 		tt.updateTT(pkt2, trace2);
+		
+		tt.show(tt.root);
 	}
 }

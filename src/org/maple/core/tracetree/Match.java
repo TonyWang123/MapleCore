@@ -1,7 +1,10 @@
 package org.maple.core.tracetree;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Match {
-    public enum Field {
+    public static enum Field {
 	    IN_PORT,
 	    ETH_SRC,
 	    ETH_DST,
@@ -12,8 +15,10 @@ public class Match {
 	    TCP_SRC_PORT,
 	    TCP_DST_PORT
     }
+    
+    public Map<Field, String> fields = new HashMap<Field, String>();
 
-    public Field field;
-    public String value;
-    public boolean Tvalue;
+    //public Field field;
+    //public String value;
+    //public boolean Tvalue;
 }

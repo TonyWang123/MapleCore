@@ -7,6 +7,8 @@ import java.util.Set;
 public class VNode extends Node{
 	
 	public Match.Field field;
+	
+	public String value;
 
 	public Map<String, Node> subtree = new HashMap<String, Node>();
 	
@@ -25,11 +27,18 @@ public class VNode extends Node{
 	@Override
 	public void augment(Node node, MaplePacket pkt) {
 		// TODO Auto-generated method stub
-		if(node.equals(VNode.class)){
+		if(node instanceof VNode){
 			this.count++;
 			//merge
-			Node father = node.pkt2fatherinTrace.get(pkt);
+			/*Node father = node.pkt2fatherinTrace.get(pkt);
 			father.pkt2nextNodeinTrace.put(pkt, this);
+			this.pkt2nextNodeinTrace.put(pkt, node.pkt2nextNodeinTrace.get(pkt));*/
+			Node father = node.pkt2fatherinTrace.get(pkt);
+			if(father == null){
+				//first node
+			}else{
+				father.pkt2nextNodeinTrace.put(pkt, this);
+			}
 			this.pkt2nextNodeinTrace.put(pkt, node.pkt2nextNodeinTrace.get(pkt));
 			
 			VNode vNode = (VNode)node;

@@ -13,9 +13,6 @@ import org.maple.core.MapleCore;
 import org.maple.core.packet.Ethernet;
 import org.maple.core.packet.IPv4;
 import org.maple.core.packet.TCP;
-import org.maple.core.tracetree.TraceItem;
-import org.maple.core.tracetree.TraceItemT;
-import org.maple.core.tracetree.TraceItemV;
 
 public class MaplePacket {
 
@@ -28,80 +25,130 @@ public class MaplePacket {
     public Ethernet frame;
     private Port ingressPort;
     private MapleCore mapleCore;
+    private Trace trace;
 
     public MaplePacket(Ethernet frame, Port ingressPort, MapleCore mapleCore, Trace trace) {
         this.frame = frame;
         this.mapleCore = mapleCore;
         this.ingressPort = ingressPort;
+        this.trace = trace;
     }
 
     public final long ethSrc() {
         long addr = Ethernet.toLong(frame.getSourceMACAddress());
-        mapleCore.traceAdd(TraceItemV.ethSrc(addr));
+        VNode vNode = new VNode();
+        vNode.field = Match.Field.ETH_SRC;
+        vNode.value = String.valueOf(addr);
+        trace.addNode(vNode, this, String.valueOf(addr), false);
+        //mapleCore.traceAdd(TraceItemV.ethSrc(addr));
         return addr;
     }
 
     public final long ethDst() {
         long addr = Ethernet.toLong(frame.getDestinationMACAddress());
-        mapleCore.traceAdd(TraceItemV.ethDst(addr));
+        VNode vNode = new VNode();
+        vNode.field = Match.Field.ETH_DST;
+        vNode.value = String.valueOf(addr);
+        trace.addNode(vNode, this, String.valueOf(addr), false);
+        //mapleCore.traceAdd(TraceItemV.ethDst(addr));
         return addr;
     }
 
     public final int ethType() {
-        mapleCore.traceAdd(TraceItemV.ethType(frame.getEtherType()));
+    	VNode vNode = new VNode();
+    	vNode.field = Match.Field.ETH_TYPE;
+    	vNode.value = String.valueOf(frame.getEtherType());
+    	trace.addNode(vNode, this, String.valueOf(frame.getEtherType()), false);
+        //mapleCore.traceAdd(TraceItemV.ethType(frame.getEtherType()));
         return frame.getEtherType();
     }
 
     public final Port ingressPort() {
-        mapleCore.traceAdd(TraceItemV.inPort(ingressPort));
+    	VNode vNode = new VNode();
+    	vNode.field = Match.Field.IN_PORT;
+        vNode.value = String.valueOf(ingressPort);
+    	trace.addNode(vNode, this, String.valueOf(ingressPort), false);
+        //mapleCore.traceAdd(TraceItemV.inPort(ingressPort));
         return ingressPort;
     }
 
     public final int IPv4Src() {
     	IPv4 pIP = (IPv4) frame.getPayload();
-    	mapleCore.traceAdd(TraceItemV.IP4Src(pIP.getSourceAddress()));
+    	VNode vNode = new VNode();
+    	vNode.field = Match.Field.IPv4_SRC;
+    	vNode.value = String.valueOf(pIP.getSourceAddress());
+    	trace.addNode(vNode, this, String.valueOf(pIP.getSourceAddress()), false);
+    	//mapleCore.traceAdd(TraceItemV.IP4Src(pIP.getSourceAddress()));
     	return pIP.getSourceAddress();
     }
 
     public final int IPv4Dst() {
     	IPv4 pIP = (IPv4) frame.getPayload();
-    	mapleCore.traceAdd(TraceItemV.IP4Dst(pIP.getDestinationAddress()));
+    	VNode vNode = new VNode();
+    	vNode.field = Match.Field.IPv4_DST;
+    	vNode.value = String.valueOf(pIP.getDestinationAddress());
+    	trace.addNode(vNode, this, String.valueOf(pIP.getDestinationAddress()), false);
+    	//mapleCore.traceAdd(TraceItemV.IP4Dst(pIP.getDestinationAddress()));
     	return pIP.getDestinationAddress();
     }
 
     public final int TCPSrcPort() {
     	IPv4 pIP = (IPv4) frame.getPayload();
     	TCP pTCP = (TCP) pIP.getPayload();
-        mapleCore.traceAdd(TraceItemV.TCP_SRC_PORT(pTCP.getSourcePort()));
+    	VNode vNode = new VNode();
+    	vNode.field = Match.Field.TCP_SRC_PORT;
+    	vNode.value = String.valueOf(pTCP.getSourcePort());
+    	trace.addNode(vNode, this, String.valueOf(pTCP.getSourcePort()), false);
+        //mapleCore.traceAdd(TraceItemV.TCP_SRC_PORT(pTCP.getSourcePort()));
         return pTCP.getSourcePort();
     }
 
     public final int TCPDstPort() {
     	IPv4 pIP = (IPv4) frame.getPayload();
     	TCP pTCP = (TCP) pIP.getPayload();
-        mapleCore.traceAdd(TraceItemV.TCP_DST_PORT(pTCP.getDestinationPort()));
+    	VNode vNode = new VNode();
+    	vNode.field = Match.Field.TCP_DST_PORT;
+    	vNode.value = String.valueOf(pTCP.getDestinationPort());
+    	trace.addNode(vNode, this, String.valueOf(pTCP.getDestinationPort()), false);
+        //mapleCore.traceAdd(TraceItemV.TCP_DST_PORT(pTCP.getDestinationPort()));
         return pTCP.getDestinationPort();
     }
 
     public final boolean ethSrcIs(long exp) {
         long addr = Ethernet.toLong(frame.getSourceMACAddress());
-        mapleCore.traceAdd(TraceItemT.ethSrcIs(addr, exp));
+        TNode tNode = new TNode();
+        tNode.field = Match.Field.ETH_SRC;
+        tNode.value = String.valueOf(exp);
+        trace.addNode(tNode, this, null, addr == exp);
+        //mapleCore.traceAdd(TraceItemT.ethSrcIs(addr, exp));
         return (addr == exp);
     }
 
     public final boolean ethDstIs(long exp) {
         long addr = Ethernet.toLong(frame.getDestinationMACAddress());
-        mapleCore.traceAdd(TraceItemT.ethDstIs(addr, exp));
+        TNode tNode = new TNode();
+        tNode.field = Match.Field.ETH_DST;
+        tNode.value = String.valueOf(exp);
+        trace.addNode(tNode, this, null, addr == exp);
+        //mapleCore.traceAdd(TraceItemT.ethDstIs(addr, exp));
         return (addr == exp);
     }
 
     public final boolean ethTypeIs(int exp) {
-        mapleCore.traceAdd(TraceItemT.ethTypeIs(frame.getEtherType(), exp));
+    	TNode tNode = new TNode();
+        tNode.field = Match.Field.ETH_TYPE;
+        tNode.value = String.valueOf(exp);
+        trace.addNode(tNode, this, null, frame.getEtherType() == exp);
+        //mapleCore.traceAdd(TraceItemT.ethTypeIs(frame.getEtherType(), exp));
         return (frame.getEtherType() == exp);
     }
 
     public final boolean ingressPortIs(Port exp) {
-        mapleCore.traceAdd(TraceItemT.inPortIs(ingressPort, exp));
+    	TNode tNode = new TNode();
+        tNode.field = Match.Field.IN_PORT;
+        tNode.value = String.valueOf(exp);
+        trace.addNode(tNode, this, null, ingressPort == exp);
+        //mapleCore.traceAdd(TraceItemT.inPortIs(ingressPort, exp));
         return (ingressPort == exp);
     }
 

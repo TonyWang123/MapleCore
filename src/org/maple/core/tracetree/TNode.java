@@ -34,11 +34,16 @@ public class TNode extends Node{
 	@Override
 	public void augment(Node node, MaplePacket pkt) {
 		// TODO Auto-generated method stub
-		if(node.equals(TNode.class)){
+		if(node instanceof TNode){
 			this.count++;
 			//merge
+			//null?
 			Node father = node.pkt2fatherinTrace.get(pkt);
-			father.pkt2nextNodeinTrace.put(pkt, this);
+			if(father == null){
+				//first node
+			}else{
+				father.pkt2nextNodeinTrace.put(pkt, this);
+			}
 			this.pkt2nextNodeinTrace.put(pkt, node.pkt2nextNodeinTrace.get(pkt));
 			
 			TNode tNode = (TNode)node;
@@ -62,6 +67,7 @@ public class TNode extends Node{
 			this.fatherNodesinOrderGraph.addAll(node.fatherNodesinOrderGraph);
 		}else{
 			//wrong
+			System.out.println("wrong in tNode augment!");
 		}
 	}
 }
