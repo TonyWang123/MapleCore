@@ -7,4 +7,8 @@ public class Action {
 	
 	public static Action Punt() { return punt; }
 	public static Action Drop() { return drop; }
+	
+	public TraceItem toItem(){
+		return new TraceItem();
+	}
 }

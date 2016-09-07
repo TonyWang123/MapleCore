@@ -1,10 +1,11 @@
 package org.maple.core.increment.app;
 
+import org.maple.core.increment.tracetree.Action;
 import org.maple.core.increment.tracetree.MaplePacket;
 
-public class MapleApp {
+public class MapleApp extends MapleAppBase{
 
-	public void onPacket(MaplePacket pkt){
+	public Action onPacket(MaplePacket pkt){
 		/*
 		 * MaplePacket maplePacket <- pkt
 		 * Trace trace = new Trace();
@@ -14,5 +15,6 @@ public class MapleApp {
 		 * store maplePacket and trace
 		 * 
 		 * */
+		return Action.Drop();
 	}
 }
