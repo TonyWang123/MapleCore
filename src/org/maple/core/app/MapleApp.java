@@ -1,8 +1,10 @@
 package org.maple.core.app;
 
+import org.maple.core.tracetree.MaplePacket;
+
 public class MapleApp {
 
-	public void onPacket(Packet pkt){
+	public void onPacket(MaplePacket pkt){
 		/*
 		 * MaplePacket maplePacket <- pkt
 		 * Trace trace = new Trace();
