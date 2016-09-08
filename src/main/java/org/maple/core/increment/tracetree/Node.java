@@ -23,5 +23,5 @@ public abstract class Node {
 	
 	public abstract void delete(Node node);
 	
-	public abstract void augment(Node node, MaplePacket pkt);
+	public abstract void augment(Node node, MaplePacket pkt, Trace trace, TraceTree tt);
 }

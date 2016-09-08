@@ -1,6 +1,7 @@
 package org.maple.core.increment.tracetree;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,7 +26,7 @@ public class VNode extends Node{
 	}
 
 	@Override
-	public void augment(Node node, MaplePacket pkt) {
+	public void augment(Node node, MaplePacket pkt, Trace trace, TraceTree tt) {
 		// TODO Auto-generated method stub
 		if(node instanceof VNode){
 			this.count++;
@@ -36,10 +37,34 @@ public class VNode extends Node{
 			Node father = node.pkt2fatherinTrace.get(pkt);
 			if(father == null){
 				//first node
+				trace.firstNode = this;
+				//does not handle last node
 			}else{
 				father.pkt2nextNodeinTrace.put(pkt, this);
 			}
 			this.pkt2nextNodeinTrace.put(pkt, node.pkt2nextNodeinTrace.get(pkt));
+			
+			//handle map
+			for(Node childNode: tt.fatherNode2ChildNodesInOrderGraph.get(node)){
+				childNode.fatherNodesinOrderGraph.remove(node);
+				childNode.fatherNodesinOrderGraph.add(this);
+			}
+			List<Node> tempChilds = tt.fatherNode2ChildNodesInOrderGraph.get(node);
+			tt.fatherNode2ChildNodesInOrderGraph.remove(node);
+			tt.fatherNode2ChildNodesInOrderGraph.put(this, tempChilds);
+			
+			//handle edgeWeight
+			List<Node> tempChildsForEdge = tt.edgeWithOneWeightInOrderGraph.get(node);
+			tt.edgeWithOneWeightInOrderGraph.remove(node);
+			tt.edgeWithOneWeightInOrderGraph.put(this, tempChildsForEdge);
+			for(Map.Entry<Node, List<Node>> entry: tt.edgeWithOneWeightInOrderGraph.entrySet()){
+				Node keyNode = entry.getKey();
+				List<Node> valueNodes = entry.getValue();
+				if(valueNodes.contains(node)){
+					valueNodes.remove(node);
+					valueNodes.add(this);
+				}
+			}
 			
 			VNode vNode = (VNode)node;
 			String key = null;
@@ -51,7 +76,7 @@ public class VNode extends Node{
 			}
 			if(this.subtree.containsKey(key)){
 				Node containtedNode = this.subtree.get(key);
-				containtedNode.augment(valueNode, pkt);
+				containtedNode.augment(valueNode, pkt, trace, tt);
 			}else{
 				this.subtree.put(key, valueNode);
 				//finish?
