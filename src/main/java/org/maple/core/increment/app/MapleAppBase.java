@@ -5,5 +5,5 @@ import org.maple.core.increment.tracetree.MaplePacket;
 
 public abstract class MapleAppBase {
 
-	abstract Action onPacket(MaplePacket pkt);
+	abstract public Action onPacket(MaplePacket pkt);
 }
