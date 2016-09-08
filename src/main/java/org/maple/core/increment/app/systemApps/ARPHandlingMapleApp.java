@@ -23,8 +23,6 @@ public class ARPHandlingMapleApp extends MapleAppBase{
     private static Map<String, Set<String>> alreadySendForARP = new ConcurrentHashMap<String, Set<String>>();
     private static Date lastSeenArp = new Date();
 
-
-    @Override
     public Action onPacket(MaplePacket pkt){
         if(pkt.ethType() == Ethernet.TYPE_ARP){
 
