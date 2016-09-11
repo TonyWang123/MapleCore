@@ -17,7 +17,7 @@ public class TraceTree {
 
 	public Node root;
 	
-	public HashMap<MaplePacket, Trace> pkt2trace = new HashMap<MaplePacket, Trace>();
+	private HashMap<MaplePacket, Trace> pkt2trace = new HashMap<MaplePacket, Trace>();
 	
 	//srcNode, dstNode, indicate weight = 1
 	public Map<Node, List<Node>> edgeWithOneWeightInOrderGraph = new HashMap<Node, List<Node>>();
@@ -35,7 +35,21 @@ public class TraceTree {
 		traverseTTtoUpdatePriority2(tNew.firstNode, pkt, root);
 	}
 	
-	public void deleteTrace(MaplePacket pkt, Trace trace){
+	public void updateTTMultiple(Map<MaplePacket, Trace> pkt2TraceInput) {
+		for (Map.Entry<MaplePacket, Trace> entry: pkt2TraceInput.entrySet()){
+			MaplePacket pkt = entry.getKey();
+			Trace trace = entry.getValue();
+			if (pkt2trace.containsKey(pkt)) {
+				Trace tOld = pkt2trace.get(pkt);
+				deleteTrace(pkt, tOld);
+			}
+			initializeOrderGraphOfTrace(trace, pkt);
+			addTrace(pkt, trace);//this step modifies the trace's first node by merging
+		}
+		traverseTTtoUpdatePriority3(root);
+	}
+	
+	private void deleteTrace(MaplePacket pkt, Trace trace){
 	    Node node = trace.firstNode;
 	    List<Node> allTNodes = new LinkedList<Node>();
 	    while(node != null){
@@ -99,7 +113,7 @@ public class TraceTree {
 		
 	}
 	
-	public void addTrace(MaplePacket pkt, Trace trace){
+	private void addTrace(MaplePacket pkt, Trace trace){
 		addCount(trace, pkt);
 		if(root == null){
 			root = trace.firstNode;
@@ -112,7 +126,7 @@ public class TraceTree {
 		pkt2trace.put(pkt, trace);
 	}
 	
-	public void addCount(Trace trace, MaplePacket pkt){
+	private void addCount(Trace trace, MaplePacket pkt){
 		Node node = trace.firstNode;
 		while(node != null){
 			node.count++;
@@ -120,7 +134,7 @@ public class TraceTree {
 		}
 	}
 	
-	public void addEntryToFatherNode2ChildNodesInOrderGraph(Node father, Node child){
+	private void addEntryToFatherNode2ChildNodesInOrderGraph(Node father, Node child){
 		if(!this.fatherNode2ChildNodesInOrderGraph.containsKey(father)){
 		    List<Node> childs = new LinkedList<Node>();
 		    childs.add(child);
@@ -130,14 +144,14 @@ public class TraceTree {
 		}
 	}
 	
-	public void removeEntryFromFatherNode2ChildNodesInOrderGraph(Node father, Node child){
+	private void removeEntryFromFatherNode2ChildNodesInOrderGraph(Node father, Node child){
 		if(this.fatherNode2ChildNodesInOrderGraph.containsKey(father)){
 			this.fatherNode2ChildNodesInOrderGraph.get(father).remove(child);
 		}
 	}
 	
 	//setup order graph
-	public void initializeOrderGraphOfTrace(Trace trace, MaplePacket pkt){
+	private void initializeOrderGraphOfTrace(Trace trace, MaplePacket pkt){
 		Node node = trace.firstNode;
 		List<Node> allTNodesWithFalseBranch = new LinkedList<Node>();
 		while(node.pkt2nextNodeinTrace.get(pkt) != null){
@@ -206,6 +220,37 @@ public class TraceTree {
 				this.edgeWithOneWeightInOrderGraph.get(node).add(tNode);
 			}
 			//this.edgeWithOneWeightInOrderGraph.put(node, tNode);
+		}
+	}
+	
+	private void traverseTTtoUpdatePriority3(Node root){
+		if (root instanceof TNode) {
+			TNode tNode = (TNode)root;
+			if (tNode.getChild(false) != null) {
+				traverseTTtoUpdatePriority3(tNode.getChild(false));
+			}
+			if (updatePriority(root)) {
+				root.ruleChanged = true; //TODO: also need to add at install rules and delete rules
+			}
+			if (tNode.getChild(true) != null) {
+				traverseTTtoUpdatePriority3(tNode.getChild(true));
+			}
+		} else if (root instanceof VNode) {
+			if (updatePriority(root)) {
+				//priority changed
+				root.ruleChanged = true; //TODO: also need to add at install rules and delete rules
+			}
+			VNode vNodeRoot = (VNode)root;
+			for (Map.Entry<String, Node> entry: vNodeRoot.subtree.entrySet()) {
+				String value = entry.getKey();
+				Node childNode = entry.getValue();
+				traverseTTtoUpdatePriority3(childNode);
+			}
+		} else {
+			if (updatePriority(root)) {
+				//priority changed
+				root.ruleChanged = true; //TODO: also need to add at install rules and delete rules
+			}
 		}
 	}
 	
@@ -285,7 +330,7 @@ public class TraceTree {
 		}
 	}
 	
-	public boolean updatePriority(Node node){
+	private boolean updatePriority(Node node){
 		boolean isChanged = false;
 		int oldPriority = node.priority;
 		int max = Integer.MIN_VALUE;
