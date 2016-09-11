@@ -16,6 +16,8 @@ public class TestTraceTree extends TestCase{
 		
 		MaplePacket pkt1 = new MaplePacket();
 		
+		String pkt1Hash = "pkt1Hash";
+		
 		TNode tNode1 = new TNode();
 		tNode1.field = Match.Field.ETH_TYPE;
 		tNode1.value = "arp";
@@ -26,10 +28,10 @@ public class TestTraceTree extends TestCase{
 		
 		tNode1.subtree[0] = vNode1;//false
 		vNode1.subtree.put("mac:1", lNode1);
-		tNode1.pkt2nextNodeinTrace.put(pkt1.toString(), vNode1);
-		vNode1.pkt2fatherinTrace.put(pkt1.toString(), tNode1);
-		vNode1.pkt2nextNodeinTrace.put(pkt1.toString(), lNode1);
-		lNode1.pkt2fatherinTrace.put(pkt1.toString(), vNode1);
+		tNode1.pkt2nextNodeinTrace.put(pkt1Hash, vNode1);
+		vNode1.pkt2fatherinTrace.put(pkt1Hash, tNode1);
+		vNode1.pkt2nextNodeinTrace.put(pkt1Hash, lNode1);
+		lNode1.pkt2fatherinTrace.put(pkt1Hash, vNode1);
 		
 		Trace trace1 = new Trace();
 		trace1.firstNode = tNode1;
@@ -37,6 +39,8 @@ public class TestTraceTree extends TestCase{
 		
 		
 		MaplePacket pkt2 = new MaplePacket();
+		
+		String pkt2Hash = "pkt2Hash";
 		
 		TNode tNode2 = new TNode();
 		tNode2.field = Match.Field.ETH_TYPE;
@@ -48,19 +52,19 @@ public class TestTraceTree extends TestCase{
 		
 		tNode2.subtree[1] = vNode2;//true
 		vNode2.subtree.put("mac:2", lNode2);
-		tNode2.pkt2nextNodeinTrace.put(pkt2.toString(), vNode2);
-		vNode2.pkt2fatherinTrace.put(pkt2.toString(), tNode2);
-		vNode2.pkt2nextNodeinTrace.put(pkt2.toString(), lNode2);
-		lNode2.pkt2fatherinTrace.put(pkt2.toString(), vNode2);
+		tNode2.pkt2nextNodeinTrace.put(pkt2Hash, vNode2);
+		vNode2.pkt2fatherinTrace.put(pkt2Hash, tNode2);
+		vNode2.pkt2nextNodeinTrace.put(pkt2Hash, lNode2);
+		lNode2.pkt2fatherinTrace.put(pkt2Hash, vNode2);
 		
 		Trace trace2 = new Trace();
 		trace2.firstNode = tNode2;
 		
-		tt.updateTT(pkt1.toString(), trace1);
+		tt.updateTT(pkt1Hash, trace1);
 		
 		assertTrue(tt.root.priority == 1);
 		
-		tt.updateTT(pkt2.toString(), trace2);
+		tt.updateTT(pkt2Hash, trace2);
 		
 		assertTrue(tt.root instanceof TNode);
 		
