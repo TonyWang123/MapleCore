@@ -9,4 +9,11 @@ package org.maple.core.increment.tracetree;
 
 public class Drop extends Action{
 
+	@Override
+	public TraceItem toItem(){
+		TraceItem traceItem = new TraceItem();
+		traceItem.type = "L";
+		traceItem.action = "drop";
+		return traceItem;
+	}
 }

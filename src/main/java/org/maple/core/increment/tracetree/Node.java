@@ -14,11 +14,11 @@ import java.util.Map;
 
 public abstract class Node {
 
-	public Map<MaplePacket, Node> pkt2nextNodeinTrace = new HashMap<MaplePacket, Node>();
+	public Map<String, Node> pkt2nextNodeinTrace = new HashMap<String, Node>();
 	
 	public int count; //how many trace share this node, if 0, should remove this node
 	
-	public Map<MaplePacket, Node> pkt2fatherinTrace = new HashMap<MaplePacket, Node>();
+	public Map<String, Node> pkt2fatherinTrace = new HashMap<String, Node>();
 	
 	//public List<Node> nextNodesinOrderGraph = new LinkedList<Node>();
 	
@@ -30,5 +30,5 @@ public abstract class Node {
 	
 	public abstract void delete(Node node);
 	
-	public abstract void augment(Node node, MaplePacket pkt, Trace trace, TraceTree tt);
+	public abstract void augment(Node node, String pktHash, Trace trace, TraceTree tt);
 }

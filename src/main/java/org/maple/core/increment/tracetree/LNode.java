@@ -22,7 +22,7 @@ public class LNode extends Node{
 	}
 
 	@Override
-	public void augment(Node node, MaplePacket pkt, Trace trace, TraceTree tt) {
+	public void augment(Node node, String pkt, Trace trace, TraceTree tt) {
 		// TODO Auto-generated method stub
 		
 	}

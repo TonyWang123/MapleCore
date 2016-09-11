@@ -41,21 +41,21 @@ public class TNode extends Node{
     }
 
 	@Override
-	public void augment(Node node, MaplePacket pkt, Trace trace, TraceTree tt) {
+	public void augment(Node node, String pktHash, Trace trace, TraceTree tt) {
 		// TODO Auto-generated method stub
 		if(node instanceof TNode){
 			this.count++;
 			//merge
 			//null?
-			Node father = node.pkt2fatherinTrace.get(pkt);
+			Node father = node.pkt2fatherinTrace.get(pktHash);
 			if(father == null){
 				//first node
 				trace.firstNode = this;
 				//does not handle last node
 			}else{
-				father.pkt2nextNodeinTrace.put(pkt, this);
+				father.pkt2nextNodeinTrace.put(pktHash, this);
 			}
-			this.pkt2nextNodeinTrace.put(pkt, node.pkt2nextNodeinTrace.get(pkt));
+			this.pkt2nextNodeinTrace.put(pktHash, node.pkt2nextNodeinTrace.get(pktHash));
 			
 			//handle map
 			for(Node childNode: tt.fatherNode2ChildNodesInOrderGraph.get(node)){
@@ -92,7 +92,7 @@ public class TNode extends Node{
 			
 			if(this.getChild(childBoolean) != null){
 				//contains
-				this.getChild(childBoolean).augment(childNode, pkt, trace, tt);
+				this.getChild(childBoolean).augment(childNode, pktHash, trace, tt);
 			}else{
 				this.subtree[childBoolean?1:0] = childNode;
 			}

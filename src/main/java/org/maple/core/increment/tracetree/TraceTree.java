@@ -17,39 +17,39 @@ public class TraceTree {
 
 	public Node root;
 	
-	private HashMap<MaplePacket, Trace> pkt2trace = new HashMap<MaplePacket, Trace>();
+	private HashMap<String, Trace> pkt2trace = new HashMap<String, Trace>();
 	
 	//srcNode, dstNode, indicate weight = 1
 	public Map<Node, List<Node>> edgeWithOneWeightInOrderGraph = new HashMap<Node, List<Node>>();
 	
 	public Map<Node, List<Node>> fatherNode2ChildNodesInOrderGraph = new HashMap<Node, List<Node>>();
 	
-	public void updateTT(MaplePacket pkt, Trace tNew){
-		if(pkt2trace.containsKey(pkt)){
+	public void updateTT(String pktHash, Trace tNew){
+		if(pkt2trace.containsKey(pktHash)){
 			//update trace
-			Trace tOld = pkt2trace.get(pkt);
-			deleteTrace(pkt, tOld);
+			Trace tOld = pkt2trace.get(pktHash);
+			deleteTrace(pktHash, tOld);
 		}
-		initializeOrderGraphOfTrace(tNew, pkt);
-		addTrace(pkt, tNew);//this step modifies the trace's first node by merging
-		traverseTTtoUpdatePriority2(tNew.firstNode, pkt, root);
+		initializeOrderGraphOfTrace(tNew, pktHash);
+		addTrace(pktHash, tNew);//this step modifies the trace's first node by merging
+		traverseTTtoUpdatePriority2(tNew.firstNode, pktHash, root);
 	}
 	
-	public void updateTTMultiple(Map<MaplePacket, Trace> pkt2TraceInput) {
-		for (Map.Entry<MaplePacket, Trace> entry: pkt2TraceInput.entrySet()){
-			MaplePacket pkt = entry.getKey();
+	public void updateTTMultiple(Map<String, Trace> pkt2TraceInput) {
+		for (Map.Entry<String, Trace> entry: pkt2TraceInput.entrySet()){
+			String pktHash = entry.getKey();
 			Trace trace = entry.getValue();
-			if (pkt2trace.containsKey(pkt)) {
-				Trace tOld = pkt2trace.get(pkt);
-				deleteTrace(pkt, tOld);
+			if (pkt2trace.containsKey(pktHash)) {
+				Trace tOld = pkt2trace.get(pktHash);
+				deleteTrace(pktHash, tOld);
 			}
-			initializeOrderGraphOfTrace(trace, pkt);
-			addTrace(pkt, trace);//this step modifies the trace's first node by merging
+			initializeOrderGraphOfTrace(trace, pktHash);
+			addTrace(pktHash, trace);//this step modifies the trace's first node by merging
 		}
 		traverseTTtoUpdatePriority3(root);
 	}
 	
-	private void deleteTrace(MaplePacket pkt, Trace trace){
+	private void deleteTrace(String pktHash, Trace trace){
 	    Node node = trace.firstNode;
 	    List<Node> allTNodes = new LinkedList<Node>();
 	    while(node != null){
@@ -59,8 +59,8 @@ public class TraceTree {
 	    	node.count--;
 	    	if(node.count == 0){
 	    		//should remove this node
-	    		if(node.pkt2fatherinTrace.get(pkt) != null){
-	    			node.pkt2fatherinTrace.get(pkt).delete(node);
+	    		if(node.pkt2fatherinTrace.get(pktHash) != null){
+	    			node.pkt2fatherinTrace.get(pktHash).delete(node);
 	    		}else{
 	    			//root
 	    			this.root = null;
@@ -92,7 +92,7 @@ public class TraceTree {
 	    			}
 	    		}
 	    	}
-	    	if(node.pkt2nextNodeinTrace.get(pkt) == null){
+	    	if(node.pkt2nextNodeinTrace.get(pktHash) == null){
 	    		//this should be leaf node
 	    		deleteRule(((LNode)node).priority, ((LNode)node).rule);
 	    		for(Node tNode: allTNodes){
@@ -103,34 +103,34 @@ public class TraceTree {
 	    			}
 	    		}
 	    	}
-	    	node = node.pkt2nextNodeinTrace.get(pkt);
+	    	node = node.pkt2nextNodeinTrace.get(pktHash);
 	    	
 	    }
-	    pkt2trace.remove(pkt);
+	    pkt2trace.remove(pktHash);
 	}
 	
 	public void deleteRule(int priority, Rule rule){
 		
 	}
 	
-	private void addTrace(MaplePacket pkt, Trace trace){
-		addCount(trace, pkt);
+	private void addTrace(String pktHash, Trace trace){
+		addCount(trace, pktHash);
 		if(root == null){
 			root = trace.firstNode;
 		}else{
 			if(trace.firstNode instanceof TNode){
 				System.out.println("get tnode");
 			}
-			root.augment(trace.firstNode, pkt, trace, this);
+			root.augment(trace.firstNode, pktHash, trace, this);
 		}
-		pkt2trace.put(pkt, trace);
+		pkt2trace.put(pktHash, trace);
 	}
 	
-	private void addCount(Trace trace, MaplePacket pkt){
+	private void addCount(Trace trace, String pktHash){
 		Node node = trace.firstNode;
 		while(node != null){
 			node.count++;
-			node = node.pkt2nextNodeinTrace.get(pkt);
+			node = node.pkt2nextNodeinTrace.get(pktHash);
 		}
 	}
 	
@@ -151,11 +151,11 @@ public class TraceTree {
 	}
 	
 	//setup order graph
-	private void initializeOrderGraphOfTrace(Trace trace, MaplePacket pkt){
+	private void initializeOrderGraphOfTrace(Trace trace, String pktHash){
 		Node node = trace.firstNode;
 		List<Node> allTNodesWithFalseBranch = new LinkedList<Node>();
-		while(node.pkt2nextNodeinTrace.get(pkt) != null){
-			Node nextNode = node.pkt2nextNodeinTrace.get(pkt);
+		while(node.pkt2nextNodeinTrace.get(pktHash) != null){
+			Node nextNode = node.pkt2nextNodeinTrace.get(pktHash);
 			if(node instanceof TNode){
 				//allTNodes.add(node);//all tNodes
 				TNode tNode = (TNode)node;
@@ -203,7 +203,7 @@ public class TraceTree {
 				//handle map
 				this.addEntryToFatherNode2ChildNodesInOrderGraph(node, nextNode);
 			}
-			node = node.pkt2nextNodeinTrace.get(pkt);
+			node = node.pkt2nextNodeinTrace.get(pktHash);
 		}
 		//handle LNode
 		for(Node tNode: allTNodesWithFalseBranch){
@@ -254,15 +254,15 @@ public class TraceTree {
 		}
 	}
 	
-	private void traverseTTtoUpdatePriority2(Node currentNodeInTrace, MaplePacket pkt, Node root){
-		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pkt);
+	private void traverseTTtoUpdatePriority2(Node currentNodeInTrace, String pktHash, Node root){
+		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pktHash);
 		
 		if(root instanceof TNode){
 			TNode tNodeRoot = (TNode)root;
 			if(tNodeRoot.getChild(false) != null){
 				if(tNodeRoot.getChild(false).equals(nextNodeInTrace)){
 					//should traverse, in false branch
-					traverseTTtoUpdatePriority2(nextNodeInTrace, pkt, tNodeRoot.getChild(false));
+					traverseTTtoUpdatePriority2(nextNodeInTrace, pktHash, tNodeRoot.getChild(false));
 				}
 			}
 			if(updatePriority(root) == true){
@@ -270,7 +270,7 @@ public class TraceTree {
 				root.ruleChanged = true;//TODO: also need to add at install rules and delete rules
 			}
 			if(tNodeRoot.getChild(true) != null){
-				traverseTTtoUpdatePriority2(nextNodeInTrace, pkt, tNodeRoot.getChild(true));
+				traverseTTtoUpdatePriority2(nextNodeInTrace, pktHash, tNodeRoot.getChild(true));
 			}
 		}else if(root instanceof VNode){
 			if(updatePriority(root) == true){
@@ -281,7 +281,7 @@ public class TraceTree {
 			for(Map.Entry<String, Node> entry: vNodeRoot.subtree.entrySet()){
 				String value = entry.getKey();
 				Node childNode = entry.getValue();
-				traverseTTtoUpdatePriority2(nextNodeInTrace, pkt, childNode);
+				traverseTTtoUpdatePriority2(nextNodeInTrace, pktHash, childNode);
 			}
 		}else{
 			//LNode
@@ -294,15 +294,15 @@ public class TraceTree {
 	}
 	
 	//not correct?
-	private void traverseTTtoUpdatePriority(Node currentNodeInTrace, MaplePacket pkt, Node root){
-		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pkt);
+	private void traverseTTtoUpdatePriority(Node currentNodeInTrace, String pktHash, Node root){
+		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pktHash);
 		
 		if(root instanceof TNode){
 			TNode tNodeRoot = (TNode)root;
 			if(tNodeRoot.getChild(false) != null){
 				if(tNodeRoot.getChild(false).equals(nextNodeInTrace)){
 					//should traverse, in false branch
-					traverseTTtoUpdatePriority(nextNodeInTrace, pkt, tNodeRoot.getChild(false));
+					traverseTTtoUpdatePriority(nextNodeInTrace, pktHash, tNodeRoot.getChild(false));
 				}
 			}
 		}
@@ -316,14 +316,14 @@ public class TraceTree {
 			TNode tNodeRoot = (TNode)root;
 			Node childNode = tNodeRoot.getChild(true);
 			if(childNode != null){
-				traverseTTtoUpdatePriority(nextNodeInTrace, pkt, childNode);
+				traverseTTtoUpdatePriority(nextNodeInTrace, pktHash, childNode);
 			}
 		}else if(root instanceof VNode){
 			VNode vNodeRoot = (VNode)root;
 			for(Map.Entry<String, Node> entry: vNodeRoot.subtree.entrySet()){
 				String value = entry.getKey();
 				Node childNode = entry.getValue();
-				traverseTTtoUpdatePriority(nextNodeInTrace, pkt, childNode);
+				traverseTTtoUpdatePriority(nextNodeInTrace, pktHash, childNode);
 			}
 		}else if(root instanceof LNode){
 			return;

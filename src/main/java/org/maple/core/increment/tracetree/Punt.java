@@ -9,4 +9,11 @@ package org.maple.core.increment.tracetree;
 
 public class Punt extends Action{
 
+	@Override
+	public TraceItem toItem(){
+		TraceItem traceItem = new TraceItem();
+		traceItem.type = "L";
+		traceItem.action = "punt";
+		return traceItem;
+	}
 }

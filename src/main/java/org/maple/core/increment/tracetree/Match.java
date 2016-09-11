@@ -23,6 +23,28 @@ public class Match {
 	    TCP_DST_PORT
     }
     
+    public static Field toMatchField(String field){
+    	if (field.equals("IN_PORT")) {
+    		return Field.IN_PORT;
+    	} else if (field.equals("ETH_SRC")) {
+    		return Field.ETH_SRC;
+    	} else if (field.equals("ETH_DST")) {
+    		return Field.ETH_DST;
+    	} else if (field.equals("ETH_TYPE")) {
+    		return Field.ETH_TYPE;
+    	} else if (field.equals("IPv4_SRC")) {
+    		return Field.IPv4_SRC;
+    	} else if (field.equals("IPv4_DST")) {
+    		return Field.IPv4_DST;
+    	} else if (field.equals("TCP_SRC_PORT")) {
+    		return Field.TCP_SRC_PORT;
+    	} else if (field.equals("TCP_DST_PORT")) {
+    		return Field.TCP_DST_PORT;
+    	} else {
+    		return null;
+    	}
+    }
+    
     public Map<Field, String> fields = new HashMap<Field, String>();
 
     //public Field field;

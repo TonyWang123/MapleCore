@@ -16,6 +16,6 @@ public class Action {
 	public static Action Drop() { return drop; }
 	
 	public TraceItem toItem(){
-		return new TraceItem();
+		return null;
 	}
 }
