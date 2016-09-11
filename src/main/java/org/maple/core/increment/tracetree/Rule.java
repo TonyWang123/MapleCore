@@ -9,9 +9,9 @@ package org.maple.core.increment.tracetree;
 
 public class Rule {
 
-	Match match;
+	public Match match;
 	
-	Action action;
+	public Action action;
 	
 	public Rule(Match match, Action action){
 		this.match = match;
