@@ -26,10 +26,10 @@ public class TestTraceTree extends TestCase{
 		
 		tNode1.subtree[0] = vNode1;//false
 		vNode1.subtree.put("mac:1", lNode1);
-		tNode1.pkt2nextNodeinTrace.put(pkt1, vNode1);
-		vNode1.pkt2fatherinTrace.put(pkt1, tNode1);
-		vNode1.pkt2nextNodeinTrace.put(pkt1, lNode1);
-		lNode1.pkt2fatherinTrace.put(pkt1, vNode1);
+		tNode1.pkt2nextNodeinTrace.put(pkt1.toString(), vNode1);
+		vNode1.pkt2fatherinTrace.put(pkt1.toString(), tNode1);
+		vNode1.pkt2nextNodeinTrace.put(pkt1.toString(), lNode1);
+		lNode1.pkt2fatherinTrace.put(pkt1.toString(), vNode1);
 		
 		Trace trace1 = new Trace();
 		trace1.firstNode = tNode1;
@@ -48,19 +48,19 @@ public class TestTraceTree extends TestCase{
 		
 		tNode2.subtree[1] = vNode2;//true
 		vNode2.subtree.put("mac:2", lNode2);
-		tNode2.pkt2nextNodeinTrace.put(pkt2, vNode2);
-		vNode2.pkt2fatherinTrace.put(pkt2, tNode2);
-		vNode2.pkt2nextNodeinTrace.put(pkt2, lNode2);
-		lNode2.pkt2fatherinTrace.put(pkt2, vNode2);
+		tNode2.pkt2nextNodeinTrace.put(pkt2.toString(), vNode2);
+		vNode2.pkt2fatherinTrace.put(pkt2.toString(), tNode2);
+		vNode2.pkt2nextNodeinTrace.put(pkt2.toString(), lNode2);
+		lNode2.pkt2fatherinTrace.put(pkt2.toString(), vNode2);
 		
 		Trace trace2 = new Trace();
 		trace2.firstNode = tNode2;
 		
-		tt.updateTT(pkt1, trace1);
+		tt.updateTT(pkt1.toString(), trace1);
 		
 		assertTrue(tt.root.priority == 1);
 		
-		tt.updateTT(pkt2, trace2);
+		tt.updateTT(pkt2.toString(), trace2);
 		
 		assertTrue(tt.root instanceof TNode);
 		
