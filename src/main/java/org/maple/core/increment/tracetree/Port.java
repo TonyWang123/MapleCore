@@ -10,4 +10,16 @@ package org.maple.core.increment.tracetree;
 public class Port {
 
 	String id;
+	
+	public Port(String id) {
+		
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }

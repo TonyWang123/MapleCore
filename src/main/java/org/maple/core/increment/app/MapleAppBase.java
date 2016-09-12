@@ -7,27 +7,26 @@
  */
 package org.maple.core.increment.app;
 
+import org.maple.core.increment.MapleCore;
 import org.maple.core.increment.MapleDataPathAdaptor;
 import org.maple.core.increment.MapleDataStoreAdaptor;
 import org.maple.core.increment.tracetree.*;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorRef;
 
-public abstract class MapleAppBase implements MapleDataStoreAdaptor{
+public abstract class MapleAppBase{
+	
+	MapleCore mapleCore;
+	
+	public MapleAppBase(){
+		mapleCore = MapleCore.allocateMapleCore();
+	}
 
-	public void OnPacket(MaplePacket pkt) {
-
+	public Action onPacket(MaplePacket pkt) {
+		return null;
 	}
 
 
 	public Object readData(String xpath) {
-		return null;
-	}
-
-	public void writeData(String xpath, Object data) {
-
-	}
-
-	public void writeTraceTree(TraceTree traceTree) {
-
+		return mapleCore.readData(xpath);
 	}
 }

@@ -7,6 +7,9 @@
  */
 package org.maple.core.increment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.maple.core.increment.app.MapleApp;
 import org.maple.core.increment.app.MapleAppBase;
 import org.maple.core.increment.tracetree.MaplePacket;
@@ -21,10 +24,21 @@ public class MapleCore {
 	
 	MapleDataStoreAdaptor mapleDataStoreAdaptor;
 	
+	static List<MapleCore> mapleCores = new ArrayList<MapleCore>();
+	
+    public static MapleCore allocateMapleCore() {
+        return mapleCores.get(0); //TODO: missing allocator
+    }
+	
 	public void setAdaptor(MapleDataPathAdaptor mapleDataPathAdaptor
 			, MapleDataStoreAdaptor mapleDataStoreAdaptor){
 		this.mapleDataPathAdaptor = mapleDataPathAdaptor;
 		this.mapleDataStoreAdaptor = mapleDataStoreAdaptor;
+	}
+	
+	public Object readData(String xpath) {
+		Object data = mapleDataStoreAdaptor.readData(xpath);
+		return data;
 	}
 	
 	public void updateTrace(String pktHash, Trace trace){
