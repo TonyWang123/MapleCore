@@ -29,6 +29,10 @@ public class MapleCore {
     public static MapleCore allocateMapleCore() {
         return mapleCores.get(0); //TODO: missing allocator
     }
+    
+    public MapleCore(){
+    	mapleCores.add( this );
+    }
 	
 	public void setAdaptor(MapleDataPathAdaptor mapleDataPathAdaptor
 			, MapleDataStoreAdaptor mapleDataStoreAdaptor){
