@@ -58,18 +58,31 @@ public class TNode extends Node{
 			this.pkt2nextNodeinTrace.put(pktHash, node.pkt2nextNodeinTrace.get(pktHash));
 			
 			//handle map
-			for(Node childNode: tt.fatherNode2ChildNodesInOrderGraph.get(node)){
-				childNode.fatherNodesinOrderGraph.remove(node);
-				childNode.fatherNodesinOrderGraph.add(this);
+			if (tt.fatherNode2ChildNodesInOrderGraph.containsKey(node)) {
+				for(Node childNode: tt.fatherNode2ChildNodesInOrderGraph.get(node)){//TODO: null
+					childNode.fatherNodesinOrderGraph.remove(node);
+					childNode.fatherNodesinOrderGraph.add(this);
+				}
+				List<Node> tempChilds = tt.fatherNode2ChildNodesInOrderGraph.get(node);
+				tt.fatherNode2ChildNodesInOrderGraph.remove(node);
+				tt.fatherNode2ChildNodesInOrderGraph.put(this, tempChilds);
 			}
-			List<Node> tempChilds = tt.fatherNode2ChildNodesInOrderGraph.get(node);
-			tt.fatherNode2ChildNodesInOrderGraph.remove(node);
-			tt.fatherNode2ChildNodesInOrderGraph.put(this, tempChilds);
+			for(Map.Entry<Node, List<Node>> entry: tt.fatherNode2ChildNodesInOrderGraph.entrySet()){
+				Node keyNode = entry.getKey();
+				List<Node> valueNodes = entry.getValue();
+				if(valueNodes.contains(node)){
+					valueNodes.remove(node);
+					valueNodes.add(this);
+				}
+			}
+			
 			
 			//handle edgeWeight
-			List<Node> tempChildsForEdge = tt.edgeWithOneWeightInOrderGraph.get(node);
-			tt.edgeWithOneWeightInOrderGraph.remove(node);
-			tt.edgeWithOneWeightInOrderGraph.put(this, tempChildsForEdge);
+			if (tt.edgeWithOneWeightInOrderGraph.containsKey(node)) {
+				List<Node> tempChildsForEdge = tt.edgeWithOneWeightInOrderGraph.get(node);
+				tt.edgeWithOneWeightInOrderGraph.remove(node);
+				tt.edgeWithOneWeightInOrderGraph.put(this, tempChildsForEdge);
+			}
 			for(Map.Entry<Node, List<Node>> entry: tt.edgeWithOneWeightInOrderGraph.entrySet()){
 				Node keyNode = entry.getKey();
 				List<Node> valueNodes = entry.getValue();

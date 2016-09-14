@@ -14,7 +14,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
   <packaging>bundle</packaging>
   <properties>
   	<bundle.plugin.version>2.3.7</bundle.plugin.version>
-  	<mdsal.version>1.3.3-Beryllium-SR3</mdsal.version>
+  	<mdsal.version>1.3.2-Beryllium-SR2</mdsal.version>
   </properties>
   
   <dependencies>

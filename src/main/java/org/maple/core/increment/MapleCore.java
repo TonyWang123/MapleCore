@@ -45,7 +45,8 @@ public class MapleCore {
 		return data;
 	}
 	
-	public void updateTrace(String pktHash, Trace trace){
+	public synchronized void updateTrace(String pktHash, Trace trace){
 		//TODO: pktHash to MaplePacket, and call tt.updateTT
+		tt.updateTT(pktHash, trace);
 	}
 }

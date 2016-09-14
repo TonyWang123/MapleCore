@@ -28,6 +28,7 @@ public class Trace {
 			node.pkt2fatherinTrace.put(pktHash, lastNode);
 			//connect to TT
 			if(lastNode instanceof VNode){
+				System.out.println("set subtree of vnode" + nextPositionString);
 				VNode vNode = (VNode)lastNode;
 				vNode.subtree.put(nextPositionString, node);
 			}else if(lastNode instanceof TNode){
@@ -36,6 +37,7 @@ public class Trace {
 			}else{
 				//wrong
 			}
+			lastNode = node;
 			nextPositionString = value;
 			nextPositionInt = isTrue?1:0;
 		}
@@ -53,6 +55,7 @@ public class Trace {
 			vNode.value = traceItem.value;
 			this.addNode(vNode, pktHash, traceItem.value, false);
 		}else {
+			System.out.println("LNode: " + traceItem.action);
 			LNode lNode = new LNode();
 			lNode.action = traceItem.action;
 			this.addNode(lNode, pktHash, null, false);
@@ -104,6 +107,15 @@ public class Trace {
 			lNode.rule = rule;
 		} else {
 			//wrong
+		}
+	}
+	
+	public void show(String pktHash) {
+		System.out.println("show trace:");
+		Node node = firstNode;
+		while (node !=  null) {
+			System.out.println(node.toString());
+			node = node.pkt2nextNodeinTrace.get(pktHash);
 		}
 	}
 }

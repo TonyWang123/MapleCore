@@ -32,6 +32,7 @@ public class TraceTree {
 		}
 		initializeOrderGraphOfTrace(tNew, pktHash);
 		addTrace(pktHash, tNew);//this step modifies the trace's first node by merging
+		tNew.show(pktHash);
 		traverseTTtoUpdatePriority2(tNew.firstNode, pktHash, root);
 	}
 	
@@ -51,40 +52,31 @@ public class TraceTree {
 	
 	private void deleteTrace(String pktHash, Trace trace){
 	    Node node = trace.firstNode;
-	    List<Node> allTNodes = new LinkedList<Node>();
+	    List<Node> allTNodesWithFalseBranch = new LinkedList<Node>();
 	    while(node != null){
 	    	if(node instanceof TNode){
-	    		allTNodes.add(node);
+	    		TNode tNode = (TNode)node;
+	    		if (tNode.getChild(false) != null) {
+	    			allTNodesWithFalseBranch.add(node);
+	    		}
 	    	}
 	    	node.count--;
 	    	if(node.count == 0){
 	    		//should remove this node
 	    		if(node.pkt2fatherinTrace.get(pktHash) != null){
+	    			node.pkt2fatherinTrace.get(pktHash).pkt2nextNodeinTrace.remove(pktHash);
 	    			node.pkt2fatherinTrace.get(pktHash).delete(node);
 	    		}else{
 	    			//root
 	    			this.root = null;
 	    		}
 	    		//handle map
-    			if(this.fatherNode2ChildNodesInOrderGraph.containsKey(node)){
-    				this.fatherNode2ChildNodesInOrderGraph.remove(node);
-    			}
-    			for(Map.Entry<Node, List<Node>> entry: this.fatherNode2ChildNodesInOrderGraph.entrySet()){
-    				List<Node> childs = entry.getValue();
-    				if(childs.contains(node)){
-    					childs.remove(node);
-    				}
-    			}
+    			this.removeNodeFromFatherNode2ChildNodesInOrderGraph(node);
+    			
+    			
     			//handle edge
-    			if(this.edgeWithOneWeightInOrderGraph.containsKey(node)){
-    				this.edgeWithOneWeightInOrderGraph.remove(node);
-    			}
-    			for(Map.Entry<Node, List<Node>> entry: this.edgeWithOneWeightInOrderGraph.entrySet()){
-    				List<Node> childs = entry.getValue();
-    				if(childs.contains(node)){
-    					childs.remove(node);
-    				}
-    			}
+    			this.removeNodeFromEdgeWithOneWeightInOrderGraph(node);
+    			
 	    		if(node instanceof TNode){
 	    			TNode tNode = (TNode) node;
 	    			if(tNode.rule != null){
@@ -95,18 +87,43 @@ public class TraceTree {
 	    	if(node.pkt2nextNodeinTrace.get(pktHash) == null){
 	    		//this should be leaf node
 	    		deleteRule(((LNode)node).priority, ((LNode)node).rule);
-	    		for(Node tNode: allTNodes){
+	    		for(Node tNode: allTNodesWithFalseBranch){
 	    			tNode.fatherNodesinOrderGraph.remove(node);
 	    			//handle map
-	    			if(this.fatherNode2ChildNodesInOrderGraph.containsKey(node)){
-	    				this.fatherNode2ChildNodesInOrderGraph.remove(node);
-	    			}
+	    			this.removeNodeFromFatherNode2ChildNodesInOrderGraph(node);
+	    			
+	    			//handle edge, only up link with weight = 1
+	    			this.removeNodeFromEdgeWithOneWeightInOrderGraph(node);
 	    		}
 	    	}
 	    	node = node.pkt2nextNodeinTrace.get(pktHash);
 	    	
 	    }
 	    pkt2trace.remove(pktHash);
+	}
+	
+	private void removeNodeFromEdgeWithOneWeightInOrderGraph(Node node) {
+		if(this.edgeWithOneWeightInOrderGraph.containsKey(node)){
+			this.edgeWithOneWeightInOrderGraph.remove(node);
+		}
+		for(Map.Entry<Node, List<Node>> entry: this.edgeWithOneWeightInOrderGraph.entrySet()){
+			List<Node> childs = entry.getValue();
+			if(childs.contains(node)){
+				childs.remove(node);
+			}
+		}
+	}
+	
+	private void removeNodeFromFatherNode2ChildNodesInOrderGraph(Node node) {
+		if(this.fatherNode2ChildNodesInOrderGraph.containsKey(node)){
+			this.fatherNode2ChildNodesInOrderGraph.remove(node);
+		}
+		for(Map.Entry<Node, List<Node>> entry: this.fatherNode2ChildNodesInOrderGraph.entrySet()){
+			List<Node> childs = entry.getValue();
+			if(childs.contains(node)){
+				childs.remove(node);
+			}
+		}
 	}
 	
 	public void deleteRule(int priority, Rule rule){
@@ -118,9 +135,6 @@ public class TraceTree {
 		if(root == null){
 			root = trace.firstNode;
 		}else{
-			if(trace.firstNode instanceof TNode){
-				System.out.println("get tnode");
-			}
 			root.augment(trace.firstNode, pktHash, trace, this);
 		}
 		pkt2trace.put(pktHash, trace);
@@ -144,9 +158,14 @@ public class TraceTree {
 		}
 	}
 	
-	private void removeEntryFromFatherNode2ChildNodesInOrderGraph(Node father, Node child){
-		if(this.fatherNode2ChildNodesInOrderGraph.containsKey(father)){
-			this.fatherNode2ChildNodesInOrderGraph.get(father).remove(child);
+	//src -> dst
+	private void addEntryToeEdgeWithOneWeightInOrderGraph(Node src, Node dst) {
+		if(!this.edgeWithOneWeightInOrderGraph.containsKey(src)){
+			List<Node> nodes = new ArrayList<Node>();
+			nodes.add(dst);
+			this.edgeWithOneWeightInOrderGraph.put(src, nodes);
+		}else{
+			this.edgeWithOneWeightInOrderGraph.get(src).add(dst);
 		}
 	}
 	
@@ -169,14 +188,9 @@ public class TraceTree {
 						//handle map
 						this.addEntryToFatherNode2ChildNodesInOrderGraph(node, tNodeWithFalseBranch);
 						
-						if(!this.edgeWithOneWeightInOrderGraph.containsKey(node)){
-							List<Node> nodes = new ArrayList<Node>();
-							nodes.add(tNodeWithFalseBranch);
-							this.edgeWithOneWeightInOrderGraph.put(node, nodes);
-						}else{
-							this.edgeWithOneWeightInOrderGraph.get(node).add(tNodeWithFalseBranch);
-						}
-						//this.edgeWithOneWeightInOrderGraph.put(node, tNode);
+						//handle edge
+						this.addEntryToeEdgeWithOneWeightInOrderGraph(node, tNodeWithFalseBranch);
+						
 					}
 					//add
 					allTNodesWithFalseBranch.add(tNode);
@@ -187,15 +201,8 @@ public class TraceTree {
 					//handle map
 					this.addEntryToFatherNode2ChildNodesInOrderGraph(node, nextNode);
 					
-					//weight = 1
-					if(!this.edgeWithOneWeightInOrderGraph.containsKey(node)){
-						List<Node> nodes = new ArrayList<Node>();
-						nodes.add(nextNode);
-						this.edgeWithOneWeightInOrderGraph.put(node, nodes);
-					}else{
-						this.edgeWithOneWeightInOrderGraph.get(node).add(nextNode);
-					}
-					//this.edgeWithOneWeightInOrderGraph.put(node, nextNode);
+					//handle edge
+					this.addEntryToeEdgeWithOneWeightInOrderGraph(node, nextNode);
 				}
 			}else if(node instanceof VNode){
 				nextNode.fatherNodesinOrderGraph.add(node);
@@ -212,14 +219,8 @@ public class TraceTree {
 			//handle map
 			this.addEntryToFatherNode2ChildNodesInOrderGraph(node, tNode);
 			
-			if(!this.edgeWithOneWeightInOrderGraph.containsKey(node)){
-				List<Node> nodes = new ArrayList<Node>();
-				nodes.add(tNode);
-				this.edgeWithOneWeightInOrderGraph.put(node, nodes);
-			}else{
-				this.edgeWithOneWeightInOrderGraph.get(node).add(tNode);
-			}
-			//this.edgeWithOneWeightInOrderGraph.put(node, tNode);
+			//handle edge
+			this.addEntryToeEdgeWithOneWeightInOrderGraph(node, tNode);
 		}
 	}
 	
@@ -255,7 +256,15 @@ public class TraceTree {
 	}
 	
 	private void traverseTTtoUpdatePriority2(Node currentNodeInTrace, String pktHash, Node root){
-		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pktHash);
+		Node nextNodeInTrace = null;
+		if(currentNodeInTrace == null) {
+			System.out.println("get null error in traverse");
+		}else {
+			nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pktHash);
+			System.out.println("node in traverse: " + currentNodeInTrace.toString());
+		}
+		
+		
 		
 		if(root instanceof TNode){
 			TNode tNodeRoot = (TNode)root;
@@ -265,7 +274,7 @@ public class TraceTree {
 					traverseTTtoUpdatePriority2(nextNodeInTrace, pktHash, tNodeRoot.getChild(false));
 				}
 			}
-			if(updatePriority(root) == true){
+			if(updatePriority(root)){
 				//priority changed
 				root.ruleChanged = true;//TODO: also need to add at install rules and delete rules
 			}
@@ -273,7 +282,7 @@ public class TraceTree {
 				traverseTTtoUpdatePriority2(nextNodeInTrace, pktHash, tNodeRoot.getChild(true));
 			}
 		}else if(root instanceof VNode){
-			if(updatePriority(root) == true){
+			if(updatePriority(root)){
 				//priority changed
 				root.ruleChanged = true;//TODO: also need to add at install rules and delete rules
 			}
@@ -285,48 +294,10 @@ public class TraceTree {
 			}
 		}else{
 			//LNode
-			if(updatePriority(root) == true){
+			if(updatePriority(root)){
 				//priority changed
 				root.ruleChanged = true;//TODO: also need to add at install rules and delete rules
 			}
-			return;
-		}
-	}
-	
-	//not correct?
-	private void traverseTTtoUpdatePriority(Node currentNodeInTrace, String pktHash, Node root){
-		Node nextNodeInTrace = currentNodeInTrace.pkt2nextNodeinTrace.get(pktHash);
-		
-		if(root instanceof TNode){
-			TNode tNodeRoot = (TNode)root;
-			if(tNodeRoot.getChild(false) != null){
-				if(tNodeRoot.getChild(false).equals(nextNodeInTrace)){
-					//should traverse, in false branch
-					traverseTTtoUpdatePriority(nextNodeInTrace, pktHash, tNodeRoot.getChild(false));
-				}
-			}
-		}
-		if(updatePriority(root) == true){
-			//priority changed
-			root.ruleChanged = true;//TODO: also need to add at install rules and delete rules
-		}
-		//start to traverse tt-left
-		if(root instanceof TNode){
-			//should traverse true branch
-			TNode tNodeRoot = (TNode)root;
-			Node childNode = tNodeRoot.getChild(true);
-			if(childNode != null){
-				traverseTTtoUpdatePriority(nextNodeInTrace, pktHash, childNode);
-			}
-		}else if(root instanceof VNode){
-			VNode vNodeRoot = (VNode)root;
-			for(Map.Entry<String, Node> entry: vNodeRoot.subtree.entrySet()){
-				String value = entry.getKey();
-				Node childNode = entry.getValue();
-				traverseTTtoUpdatePriority(nextNodeInTrace, pktHash, childNode);
-			}
-		}else if(root instanceof LNode){
-			return;
 		}
 	}
 	
@@ -369,5 +340,43 @@ public class TraceTree {
 		}else{
 			return;
 		}
+	}
+	
+	public static void main(String[] args) {
+		TraceTree tt = new TraceTree();
+		
+		String pkt1Hash = "pkt1Hash";
+		
+		TNode tNode1 = new TNode();
+		tNode1.field = Match.Field.ETH_TYPE;
+		tNode1.value = "arp";
+		LNode lNode1 = new LNode();
+		lNode1.action = "port:1";
+		
+		tNode1.subtree[0] = lNode1;//false
+		tNode1.pkt2nextNodeinTrace.put(pkt1Hash, lNode1);
+		lNode1.pkt2fatherinTrace.put(pkt1Hash, tNode1);
+		
+		Trace trace1 = new Trace();
+		trace1.firstNode = tNode1;
+		
+		
+		String pkt2Hash = "pkt1Hash";
+		
+		TNode tNode2 = new TNode();
+		tNode2.field = Match.Field.ETH_TYPE;
+		tNode2.value = "arp";
+		LNode lNode2 = new LNode();
+		lNode2.action = "port:1";
+		
+		tNode2.subtree[0] = lNode2;//false
+		tNode2.pkt2nextNodeinTrace.put(pkt1Hash, lNode2);
+		lNode2.pkt2fatherinTrace.put(pkt1Hash, tNode2);
+		
+		Trace trace2 = new Trace();
+		trace2.firstNode = tNode2;
+		
+		tt.updateTT(pkt1Hash, trace1);
+		tt.updateTT(pkt1Hash, trace2);
 	}
 }
