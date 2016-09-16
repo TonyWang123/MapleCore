@@ -7,17 +7,21 @@ public class Route extends Action{
 	
 	public List<String> links = new ArrayList<String>();
 	
+	public String lastTpId;
+	
 	// link := <linkId,srcTpId,dstTpId>
-	public Route(List<String> links) {
+	public Route(List<String> links, String lastTpId) {
 		this.links = links;
+		this.lastTpId = lastTpId;
 	}
 	
 	// path := path;link
-	public Route(String path) {
+	public Route(String path, String lastTpId) {
 		String[] links = path.split(";");
 		for (String link: links) {
 			this.links.add(link);
 		}
+		this.lastTpId = lastTpId;
 	}
 	
 	// <linkId,srcTpId,dstTpId>
