@@ -15,13 +15,15 @@ public class Route extends Action{
 		this.lastTpId = lastTpId;
 	}
 	
+	// path_tpId := path+tpId
 	// path := path;link
-	public Route(String path, String lastTpId) {
-		String[] links = path.split(";");
+	public Route(String path_tpId) {
+		String[] values = path_tpId.split("\\+");
+		String[] links = values[0].split(";");
 		for (String link: links) {
 			this.links.add(link);
 		}
-		this.lastTpId = lastTpId;
+		this.lastTpId = values[1];
 	}
 	
 	// <linkId,srcTpId,dstTpId>

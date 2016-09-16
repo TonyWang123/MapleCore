@@ -19,7 +19,7 @@ public class M1 extends MapleAppBase{
 			List<String> path = new ArrayList<String>();
 			path.add(link1);
 			path.add(link2);
-			pkt.setAction(new Route(path));
+			pkt.setAction(new Route(path, "tpId5"));
 		} else if (pkt.IPv4SrcIs(IPv4.toIPv4Address("10.0.0.2")) 
 				&& pkt.IPv4DstIs(IPv4.toIPv4Address("10.0.0.1"))) {
 			String link1 = "<l3,tpId2,tpId1>";
@@ -27,7 +27,7 @@ public class M1 extends MapleAppBase{
 			List<String> path = new ArrayList<String>();
 			path.add(link1);
 			path.add(link2);
-			pkt.setAction(new Route(path));
+			pkt.setAction(new Route(path, "tpId0"));
 		} else {
 			pkt.setAction(Action.Drop());
 		}
