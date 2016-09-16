@@ -30,7 +30,8 @@ public class ARPHandlingMapleApp extends MapleAppBase{
     private static Map<String, Set<String>> alreadySendForARP = new ConcurrentHashMap<String, Set<String>>();
     private static Date lastSeenArp = new Date();
 
-    public Action onPacket(MaplePacket pkt){
+    @Override
+    public void onPacket(MaplePacket pkt){
         if(pkt.ethType() == Ethernet.TYPE_ARP){
 
             Date currentDate = new Date();
@@ -53,7 +54,8 @@ public class ARPHandlingMapleApp extends MapleAppBase{
             if(alreadySendForARP.containsKey(key)){
                 if(alreadySendForARP.get(key).contains(node)) {//ingress
                     System.out.println("arp dropped");
-                    return Action.Drop();
+                    pkt.setAction(Action.Drop());
+                    return;
                 } else {
                     alreadySendForARP.get(key).add(node);
                 }
@@ -63,10 +65,10 @@ public class ARPHandlingMapleApp extends MapleAppBase{
                 tempSet.add(node);//ingress
             }
             System.out.println("arp flooded");
-            return null;
+            return; //null
          //   return Action.Flood();  TODO
         }else{
-            return null;
+            return; //null
         }
     }
 }

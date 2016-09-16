@@ -17,16 +17,30 @@ public abstract class MapleAppBase{
 	
 	MapleCore mapleCore;
 	
+	MapleAppBase nextMapleApp;
+	
 	public MapleAppBase(){
 		mapleCore = MapleCore.allocateMapleCore();
+		mapleCore.registerMapleApp(this);
 	}
 
-	public Action onPacket(MaplePacket pkt) {
-		return null;
+	public void onPacket(MaplePacket pkt) {
 	}
 
 
 	public Object readData(String xpath) {
 		return mapleCore.readData(xpath);
+	}
+	
+	public void passToNext(MaplePacket pkt) {
+		nextMapleApp.onPacket(pkt);
+	}
+
+	public MapleAppBase getNextMapleApp() {
+		return nextMapleApp;
+	}
+
+	public void setNextMapleApp(MapleAppBase nextMapleApp) {
+		this.nextMapleApp = nextMapleApp;
 	}
 }

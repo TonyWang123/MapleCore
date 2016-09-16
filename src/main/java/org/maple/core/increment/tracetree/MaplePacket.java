@@ -7,8 +7,10 @@
  */
 package org.maple.core.increment.tracetree;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.maple.core.increment.MapleCore;
 import org.maple.core.increment.packet.Ethernet;
@@ -29,15 +31,26 @@ public class MaplePacket {
     //private Trace trace;
     
     public List<TraceItem> itemList = new LinkedList<TraceItem>();
+    
+    private Map<Match.Field, String> modifiedFieldValues = new HashMap<Match.Field, String>();
 
+    private Action action;
+    
     public MaplePacket(Ethernet frame, Port ingressPort) {
         this.frame = frame;
         //this.mapleCore = mapleCore;
         this.ingressPort = ingressPort;
         //this.trace = trace;
     }
+    
+    public void setEthSrc(long value) {
+    	modifiedFieldValues.put(Match.Field.ETH_SRC, String.valueOf(value));
+    }
 
     public final long ethSrc() {
+    	if (modifiedFieldValues.containsKey(Match.Field.ETH_SRC)) {
+    		return Long.parseLong(modifiedFieldValues.get(Match.Field.ETH_SRC));
+    	}
         long addr = Ethernet.toLong(frame.getSourceMACAddress());
         /*VNode vNode = new VNode();
         vNode.field = Match.Field.ETH_SRC;
@@ -51,8 +64,15 @@ public class MaplePacket {
         this.itemList.add(item);
         return addr;
     }
+    
+    public void setEthDst(long value) {
+    	modifiedFieldValues.put(Match.Field.ETH_DST, String.valueOf(value));
+    }
 
     public final long ethDst() {
+    	if (modifiedFieldValues.containsKey(Match.Field.ETH_DST)) {
+    		return Long.parseLong(modifiedFieldValues.get(Match.Field.ETH_DST));
+    	}
         long addr = Ethernet.toLong(frame.getDestinationMACAddress());
         /*VNode vNode = new VNode();
         vNode.field = Match.Field.ETH_DST;
@@ -66,8 +86,15 @@ public class MaplePacket {
         this.itemList.add(item);
         return addr;
     }
+    
+    public void setEthType(int value) {
+    	modifiedFieldValues.put(Match.Field.ETH_TYPE, String.valueOf(value));
+    }
 
     public final int ethType() {
+    	if (modifiedFieldValues.containsKey(Match.Field.ETH_TYPE)) {
+    		return Integer.parseInt(modifiedFieldValues.get(Match.Field.ETH_DST));
+    	}
     	/*VNode vNode = new VNode();
     	vNode.field = Match.Field.ETH_TYPE;
     	vNode.value = String.valueOf(frame.getEtherType());
@@ -95,7 +122,14 @@ public class MaplePacket {
         return ingressPort;
     }
 
+    public void setIPv4Src(int value) {
+    	modifiedFieldValues.put(Match.Field.IPv4_SRC, String.valueOf(value));
+    }
+    
     public final int IPv4Src() {
+    	if (modifiedFieldValues.containsKey(Match.Field.IPv4_SRC)) {
+    		return Integer.parseInt(modifiedFieldValues.get(Match.Field.IPv4_SRC));
+    	}
     	IPv4 pIP = (IPv4) frame.getPayload();
     	/*VNode vNode = new VNode();
     	vNode.field = Match.Field.IPv4_SRC;
@@ -109,8 +143,15 @@ public class MaplePacket {
         this.itemList.add(item);
     	return pIP.getSourceAddress();
     }
+    
+    public void setIPv4Dst(int value) {
+    	modifiedFieldValues.put(Match.Field.IPv4_DST, String.valueOf(value));
+    }
 
     public final int IPv4Dst() {
+    	if (modifiedFieldValues.containsKey(Match.Field.IPv4_DST)) {
+    		return Integer.parseInt(modifiedFieldValues.get(Match.Field.IPv4_DST));
+    	}
     	IPv4 pIP = (IPv4) frame.getPayload();
     	/*VNode vNode = new VNode();
     	vNode.field = Match.Field.IPv4_DST;
@@ -124,8 +165,15 @@ public class MaplePacket {
         this.itemList.add(item);
     	return pIP.getDestinationAddress();
     }
+    
+    public void setTCPSrcPort(int value) {
+    	modifiedFieldValues.put(Match.Field.TCP_SRC_PORT, String.valueOf(value));
+    }
 
     public final int TCPSrcPort() {
+    	if (modifiedFieldValues.containsKey(Match.Field.TCP_SRC_PORT)) {
+    		return Integer.parseInt(modifiedFieldValues.get(Match.Field.TCP_SRC_PORT));
+    	}
     	IPv4 pIP = (IPv4) frame.getPayload();
     	TCP pTCP = (TCP) pIP.getPayload();
     	/*VNode vNode = new VNode();
@@ -140,8 +188,15 @@ public class MaplePacket {
         this.itemList.add(item);
         return pTCP.getSourcePort();
     }
+    
+    public void setTCPDstPort(int value) {
+    	modifiedFieldValues.put(Match.Field.TCP_DST_PORT, String.valueOf(value));
+    }
 
     public final int TCPDstPort() {
+    	if (modifiedFieldValues.containsKey(Match.Field.TCP_DST_PORT)) {
+    		return Integer.parseInt(modifiedFieldValues.get(Match.Field.TCP_DST_PORT));
+    	}
     	IPv4 pIP = (IPv4) frame.getPayload();
     	TCP pTCP = (TCP) pIP.getPayload();
     	/*VNode vNode = new VNode();
@@ -159,6 +214,10 @@ public class MaplePacket {
 
     public final boolean ethSrcIs(long exp) {
         long addr = Ethernet.toLong(frame.getSourceMACAddress());
+        
+        if (modifiedFieldValues.containsKey(Match.Field.ETH_SRC)) {
+        	addr = Long.parseLong(modifiedFieldValues.get(Match.Field.ETH_SRC));
+        }
         /*TNode tNode = new TNode();
         tNode.field = Match.Field.ETH_SRC;
         tNode.value = String.valueOf(exp);
@@ -175,6 +234,10 @@ public class MaplePacket {
 
     public final boolean ethDstIs(long exp) {
         long addr = Ethernet.toLong(frame.getDestinationMACAddress());
+        
+        if (modifiedFieldValues.containsKey(Match.Field.ETH_DST)) {
+        	addr = Long.parseLong(modifiedFieldValues.get(Match.Field.ETH_DST));
+        }
         /*TNode tNode = new TNode();
         tNode.field = Match.Field.ETH_DST;
         tNode.value = String.valueOf(exp);
@@ -190,6 +253,10 @@ public class MaplePacket {
     }
 
     public final boolean ethTypeIs(int exp) {
+    	int ethType = frame.getEtherType();
+    	if (modifiedFieldValues.containsKey(Match.Field.ETH_TYPE)) {
+    		ethType = Integer.parseInt(modifiedFieldValues.get(Match.Field.ETH_TYPE));
+        }
     	/*TNode tNode = new TNode();
         tNode.field = Match.Field.ETH_TYPE;
         tNode.value = String.valueOf(exp);
@@ -199,9 +266,9 @@ public class MaplePacket {
         item.setType("T");
         item.setField("ETH_TYPE");
         item.setValue(String.valueOf(exp));
-        item.setBranch(frame.getEtherType() == exp?"1":"0");
+        item.setBranch(ethType == exp?"1":"0");
         this.itemList.add(item);
-        return (frame.getEtherType() == exp);
+        return (ethType == exp);
     }
 
     public final boolean ingressPortIs(Port exp) {
@@ -218,8 +285,58 @@ public class MaplePacket {
         this.itemList.add(item);
         return (ingressPort == exp);
     }
+    
+    public final boolean IPv4SrcIs(int exp) {
+    	IPv4 ipv4 = (IPv4)frame.getPayload();
+    	int addr = ipv4.getSourceAddress();
+    	
+    	if (this.modifiedFieldValues.containsKey(Match.Field.IPv4_SRC)) {
+    		addr = Integer.parseInt(this.modifiedFieldValues.get(Match.Field.IPv4_SRC));
+    	}
+    	
+    	TraceItem item = new TraceItem();
+        item.setType("T");
+        item.setField("IPv4_SRC");
+        item.setValue(String.valueOf(addr));
+        item.setBranch(addr == exp?"1":"0");
+        this.itemList.add(item);
+        return (addr == exp);
+    }
+    
+    public final boolean IPv4DstIs(int exp) {
+    	IPv4 ipv4 = (IPv4)frame.getPayload();
+    	int addr = ipv4.getDestinationAddress();
+    	
+    	if (this.modifiedFieldValues.containsKey(Match.Field.IPv4_DST)) {
+    		addr = Integer.parseInt(this.modifiedFieldValues.get(Match.Field.IPv4_DST));
+    	}
+    	
+    	TraceItem item = new TraceItem();
+        item.setType("T");
+        item.setField("IPv4_DST");
+        item.setValue(String.valueOf(addr));
+        item.setBranch(addr == exp?"1":"0");
+        this.itemList.add(item);
+        return (addr == exp);
+    }
 
-    @Override
+    public Map<Match.Field, String> getModifiedFieldValues() {
+		return modifiedFieldValues;
+	}
+
+	public void setModifiedFieldValues(Map<Match.Field, String> modifiedFieldValues) {
+		this.modifiedFieldValues = modifiedFieldValues;
+	}
+
+	public Action getAction() {
+		return action;
+	}
+
+	public void setAction(Action action) {
+		this.action = action;
+	}
+
+	@Override
     public String toString() {
         return "MaplePacket [ingressPort=" + ingressPort + ", frame=" + frame + "]";
     }

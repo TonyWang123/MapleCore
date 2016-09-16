@@ -7,6 +7,9 @@
  */
 package org.maple.core.increment.tracetree;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Action {
 
 	private static Punt punt = new Punt();
@@ -14,6 +17,8 @@ public class Action {
 	
 	public static Action Punt() { return punt; }
 	public static Action Drop() { return drop; }
+	
+	public Map<Match.Field, String> modifiedFieldValues = new HashMap<Match.Field, String>();
 	
 	public TraceItem toItem(){
 		return null;

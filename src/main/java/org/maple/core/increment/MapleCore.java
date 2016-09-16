@@ -8,10 +8,12 @@
 package org.maple.core.increment;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.maple.core.increment.app.MapleApp;
 import org.maple.core.increment.app.MapleAppBase;
+import org.maple.core.increment.app.systemApps.ARPHandlingMapleApp;
 import org.maple.core.increment.tracetree.MaplePacket;
 import org.maple.core.increment.tracetree.Trace;
 import org.maple.core.increment.tracetree.TraceTree;
@@ -26,12 +28,28 @@ public class MapleCore {
 	
 	static List<MapleCore> mapleCores = new ArrayList<MapleCore>();
 	
+	MapleAppBase topMapleApp;
+	
+	
+	
     public static MapleCore allocateMapleCore() {
         return mapleCores.get(0); //TODO: missing allocator
     }
     
     public MapleCore(){
     	mapleCores.add( this );
+    	ARPHandlingMapleApp arpApp = new ARPHandlingMapleApp();
+    	
+    }
+    
+    public void registerMapleApp(MapleAppBase mapleApp) {
+    	// add maple app to the last
+    	if (this.topMapleApp == null) {
+    		this.topMapleApp = mapleApp;
+    	} else {
+    		mapleApp.setNextMapleApp(topMapleApp);
+    		this.topMapleApp = mapleApp;
+    	}
     }
 	
 	public void setAdaptor(MapleDataPathAdaptor mapleDataPathAdaptor
