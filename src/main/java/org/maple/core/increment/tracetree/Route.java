@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Route extends Action{
 	
-	List<String> links = new ArrayList<String>();
+	public List<String> links = new ArrayList<String>();
 	
 	// link := <linkId,srcTpId,dstTpId>
 	public Route(List<String> links) {
