@@ -14,9 +14,11 @@ public class Action {
 
 	private static Punt punt = new Punt();
 	private static Drop drop = new Drop();
+	private static Flood flood = new Flood();
 	
 	public static Action Punt() { return punt; }
 	public static Action Drop() { return drop; }
+	public static Action Flood() { return flood; }
 	
 	public Map<Match.Field, String> modifiedFieldValues = new HashMap<Match.Field, String>();
 	
