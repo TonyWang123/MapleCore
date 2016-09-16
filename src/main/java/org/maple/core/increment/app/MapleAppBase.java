@@ -43,4 +43,12 @@ public abstract class MapleAppBase{
 	public void setNextMapleApp(MapleAppBase nextMapleApp) {
 		this.nextMapleApp = nextMapleApp;
 	}
+
+	public MapleCore getMapleCore() {
+		return mapleCore;
+	}
+
+	public void setMapleCore(MapleCore mapleCore) {
+		this.mapleCore = mapleCore;
+	}
 }

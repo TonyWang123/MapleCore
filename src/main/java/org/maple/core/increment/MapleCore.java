@@ -8,13 +8,16 @@
 package org.maple.core.increment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.maple.core.increment.app.MapleApp;
 import org.maple.core.increment.app.MapleAppBase;
 import org.maple.core.increment.app.systemApps.ARPHandlingMapleApp;
 import org.maple.core.increment.tracetree.MaplePacket;
+import org.maple.core.increment.tracetree.Port;
 import org.maple.core.increment.tracetree.Trace;
 import org.maple.core.increment.tracetree.TraceTree;
 
@@ -30,7 +33,7 @@ public class MapleCore {
 	
 	MapleAppBase topMapleApp;
 	
-	
+	Map<Integer, Port> host2swTable = new HashMap<Integer, Port>();
 	
     public static MapleCore allocateMapleCore() {
         return mapleCores.get(0); //TODO: missing allocator
@@ -66,5 +69,13 @@ public class MapleCore {
 	public synchronized void updateTrace(String pktHash, Trace trace){
 		//TODO: pktHash to MaplePacket, and call tt.updateTT
 		tt.updateTT(pktHash, trace);
+	}
+
+	public Map<Integer, Port> getHost2swTable() {
+		return host2swTable;
+	}
+
+	public void setHost2swTable(Map<Integer, Port> host2swTable) {
+		this.host2swTable = host2swTable;
 	}
 }
